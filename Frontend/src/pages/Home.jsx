@@ -10,7 +10,6 @@ const Home = () => {
       <LiveTicker />
       <ExamCategories />
       <FeaturedResources />
-      {/* Footer coming next... */}
     </div>
   );
 };
