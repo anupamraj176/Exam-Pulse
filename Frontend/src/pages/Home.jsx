@@ -1,12 +1,16 @@
 import HeroSection from '../components/home/HeroSection';
 import LiveTicker from '../components/home/LiveTicker';
+import ExamCategories from '../components/home/ExamCategories';
+import FeaturedResources from '../components/home/FeaturedResources';
 
 const Home = () => {
   return (
     <div>
       <HeroSection />
       <LiveTicker />
-      {/* Other sections will go here */}
+      <ExamCategories />
+      <FeaturedResources />
+      {/* Footer coming next... */}
     </div>
   );
 };
