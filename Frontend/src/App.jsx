@@ -6,6 +6,7 @@ import Resources from './pages/Resources';
 import Dashboard from './pages/Dashboard';
 import PYQ from './pages/PYQ';
 import StudyRooms from './pages/StudyRoom';
+import ExamDetail from './pages/ExamDetails';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/pyq" element={<PYQ />} />
         <Route path="/study-rooms" element={<StudyRooms />} />
+        <Route path="/exams/:examId" element={<ExamDetail />} />
       </Routes>
       <Footer />
     </div>
