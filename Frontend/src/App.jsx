@@ -7,6 +7,9 @@ import Dashboard from './pages/Dashboard';
 import PYQ from './pages/PYQ';
 import StudyRooms from './pages/StudyRoom';
 import ExamDetail from './pages/ExamDetails';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Notifications from './pages/Notifications';
 
 function App() {
   return (
@@ -19,6 +22,9 @@ function App() {
         <Route path="/pyq" element={<PYQ />} />
         <Route path="/study-rooms" element={<StudyRooms />} />
         <Route path="/exams/:examId" element={<ExamDetail />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/notifications" element={<Notifications />} />
       </Routes>
       <Footer />
     </div>
