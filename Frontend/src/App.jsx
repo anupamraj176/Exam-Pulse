@@ -9,6 +9,7 @@ import StudyRooms from './pages/StudyRoom';
 import ExamDetail from './pages/ExamDetails';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Notifications from './pages/Notifications';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/exams/:examId" element={<ExamDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/notifications" element={<Notifications />} />
       </Routes>
       <Footer />
     </div>
