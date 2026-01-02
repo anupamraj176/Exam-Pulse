@@ -289,7 +289,8 @@ const Navbar = () => {
             </button>
 
             {/* Notifications */}
-            <button 
+            <Link 
+              to="/notifications"
               style={{ color: colors.pureWhite }}
               className="p-2 rounded-lg transition-all duration-200 relative"
               onMouseEnter={(e) => {
@@ -306,13 +307,13 @@ const Navbar = () => {
                 style={{ backgroundColor: colors.hotOrange }}
                 className="absolute top-1 right-1 h-2 w-2 rounded-full animate-pulse"
               ></span>
-            </button>
+            </Link>
 
             {isAuthenticated ? (
               <>
                 {/* Calendar */}
                 <Link
-                  to="/calendar"
+                  to="/exam-calendar"
                   style={{ color: colors.pureWhite }}
                   className="p-2 rounded-lg transition-all duration-200"
                   onMouseEnter={(e) => {
