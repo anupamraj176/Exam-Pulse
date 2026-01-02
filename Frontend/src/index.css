@@ -1,9 +1,9 @@
 /* stylelint-disable at-rule-no-unknown */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap');
 
 * {
   margin: 0;
@@ -11,8 +11,19 @@
   box-sizing: border-box;
 }
 
+html {
+  background-color: #100C0B;
+  min-height: 100%;
+}
+
 body {
   font-family: 'Inter', sans-serif;
   background-color: #100C0B;
   color: #FFFFFF;
+  min-height: 100vh;
+}
+
+#root {
+  background-color: #100C0B;
+  min-height: 100vh;
 }

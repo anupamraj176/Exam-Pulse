@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   BookOpen, 
@@ -11,11 +11,19 @@ import {
   Video,
   CheckCircle,
   ArrowRight,
-  Filter
+  Filter,
+  Loader
 } from 'lucide-react';
+import useResourceStore from '../../store/resourceStore';
 
 const FeaturedResources = () => {
   const [activeFilter, setActiveFilter] = useState('all');
+  const { featuredResources, fetchFeaturedResources, isLoading } = useResourceStore();
+
+  // Fetch featured resources on mount
+  useEffect(() => {
+    fetchFeaturedResources();
+  }, [fetchFeaturedResources]);
 
   // Color palette
   const colors = {
@@ -36,115 +44,29 @@ const FeaturedResources = () => {
     { id: 'video', name: 'Videos', icon: Video },
   ];
 
-  const resources = [
-    {
-      id: 1,
-      title: 'Complete Indian Polity Notes',
-      category: 'UPSC',
-      type: 'notes',
-      description: 'Comprehensive notes covering all aspects of Indian Constitution, Parliament, Judiciary, and more.',
-      thumbnail: '📚',
-      rating: 4.8,
-      downloads: 12400,
-      views: 25600,
-      pages: 120,
-      uploadedBy: 'Rajesh Kumar',
-      uploadedTime: '2 days ago',
-      trending: true,
-      tags: ['Constitution', 'Parliament', 'Judiciary'],
-      color: colors.hotOrange,
-    },
-    {
-      id: 2,
-      title: 'SSC CGL Mathematics PYQ (2015-2024)',
-      category: 'SSC',
-      type: 'pyq',
-      description: 'Last 10 years solved previous year questions with detailed explanations and shortcuts.',
-      thumbnail: '🔢',
-      rating: 4.9,
-      downloads: 18900,
-      views: 34200,
-      pages: 200,
-      uploadedBy: 'Priya Sharma',
-      uploadedTime: '1 week ago',
-      trending: true,
-      tags: ['Quantitative', 'Algebra', 'Geometry'],
-      color: colors.orangeWheel,
-    },
-    {
-      id: 3,
-      title: 'Banking Awareness Complete Package',
-      category: 'Banking',
-      type: 'notes',
-      description: 'Current affairs, banking terms, RBI policies, and financial awareness for bank exams.',
-      thumbnail: '🏦',
-      rating: 4.7,
-      downloads: 9800,
-      views: 18500,
-      pages: 85,
-      uploadedBy: 'Amit Verma',
-      uploadedTime: '3 days ago',
-      trending: false,
-      tags: ['RBI', 'Banking Terms', 'Current Affairs'],
-      color: colors.moss,
-    },
-    {
-      id: 4,
-      title: 'English Grammar Masterclass',
-      category: 'All Exams',
-      type: 'video',
-      description: 'Complete video series covering grammar rules, vocabulary, and comprehension techniques.',
-      thumbnail: '🎥',
-      rating: 4.9,
-      downloads: 15600,
-      views: 42000,
-      pages: 0,
-      duration: '12 hours',
-      uploadedBy: 'Sneha Gupta',
-      uploadedTime: '5 days ago',
-      trending: true,
-      tags: ['Grammar', 'Vocabulary', 'Comprehension'],
-      color: colors.hotOrange,
-    },
-    {
-      id: 5,
-      title: 'Indian Geography Complete Notes',
-      category: 'UPSC',
-      type: 'notes',
-      description: 'Detailed notes on physical, economic, and social geography of India with maps and diagrams.',
-      thumbnail: '🗺️',
-      rating: 4.6,
-      downloads: 8700,
-      views: 16200,
-      pages: 95,
-      uploadedBy: 'Vikram Singh',
-      uploadedTime: '1 week ago',
-      trending: false,
-      tags: ['Physical', 'Economic', 'Maps'],
-      color: colors.moss,
-    },
-    {
-      id: 6,
-      title: 'Reasoning Shortcuts & Tricks',
-      category: 'SSC',
-      type: 'notes',
-      description: 'Smart shortcuts for solving reasoning questions quickly in competitive exams.',
-      thumbnail: '🧠',
-      rating: 4.8,
-      downloads: 21000,
-      views: 38900,
-      pages: 65,
-      uploadedBy: 'Rahul Joshi',
-      uploadedTime: '4 days ago',
-      trending: true,
-      tags: ['Shortcuts', 'Puzzles', 'Seating'],
-      color: colors.orangeWheel,
-    },
-  ];
+  // Type icons mapping
+  const typeIcons = {
+    notes: '📚',
+    pdf: '📄',
+    pyq: '🔢',
+    video: '🎥',
+    ebook: '📖',
+  };
 
+  // Color mapping for resources based on type
+  const getResourceColor = (type) => {
+    switch(type) {
+      case 'notes': return colors.hotOrange;
+      case 'pyq': return colors.orangeWheel;
+      case 'video': return colors.hotOrange;
+      default: return colors.moss;
+    }
+  };
+
+  // Filter resources based on active filter
   const filteredResources = activeFilter === 'all' 
-    ? resources 
-    : resources.filter(r => r.type === activeFilter);
+    ? (featuredResources || [])
+    : (featuredResources || []).filter(r => r.type === activeFilter);
 
   return (
     <div 
@@ -250,10 +172,19 @@ const FeaturedResources = () => {
         </div>
 
         {/* Resources Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {isLoading ? (
+          <div className="flex justify-center items-center py-16">
+            <Loader style={{ color: colors.hotOrange }} className="h-8 w-8 animate-spin" />
+          </div>
+        ) : filteredResources.length === 0 ? (
+          <div className="text-center py-16">
+            <p style={{ color: colors.moss }}>No resources found</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredResources.map((resource) => (
             <div
-              key={resource.id}
+              key={resource._id || resource.id}
               style={{
                 backgroundColor: colors.eerieBlack,
                 borderColor: `${colors.moss}20`,
@@ -275,14 +206,14 @@ const FeaturedResources = () => {
                 <div className="flex items-start justify-between mb-4">
                   <div 
                     style={{
-                      background: `linear-gradient(135deg, ${resource.color}20, ${resource.color}10)`,
+                      background: `linear-gradient(135deg, ${getResourceColor(resource.type)}20, ${getResourceColor(resource.type)}10)`,
                     }}
                     className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl"
                   >
-                    {resource.thumbnail}
+                    {typeIcons[resource.type] || '📄'}
                   </div>
                   
-                  {resource.trending && (
+                  {resource.isTrending && (
                     <div 
                       style={{
                         backgroundColor: `${colors.hotOrange}20`,
@@ -325,7 +256,7 @@ const FeaturedResources = () => {
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {resource.tags.map((tag, idx) => (
+                  {(resource.tags || []).map((tag, idx) => (
                     <span
                       key={idx}
                       style={{
@@ -351,7 +282,7 @@ const FeaturedResources = () => {
                         style={{ color: colors.pureWhite }}
                         className="text-sm font-semibold"
                       >
-                        {resource.rating}
+                        {resource.stats?.rating || 0}
                       </span>
                     </div>
 
@@ -364,7 +295,7 @@ const FeaturedResources = () => {
                         style={{ color: colors.moss }}
                         className="text-xs"
                       >
-                        {(resource.downloads / 1000).toFixed(1)}k
+                        {((resource.stats?.downloads || 0) / 1000).toFixed(1)}k
                       </span>
                     </div>
 
@@ -377,25 +308,25 @@ const FeaturedResources = () => {
                         style={{ color: colors.moss }}
                         className="text-xs"
                       >
-                        {(resource.views / 1000).toFixed(1)}k
+                        {((resource.stats?.views || 0) / 1000).toFixed(1)}k
                       </span>
                     </div>
                   </div>
 
-                  {resource.pages > 0 && (
+                  {resource.metadata?.pages > 0 && (
                     <span 
                       style={{ color: colors.moss }}
                       className="text-xs font-medium"
                     >
-                      {resource.pages} pages
+                      {resource.metadata.pages} pages
                     </span>
                   )}
-                  {resource.duration && (
+                  {resource.metadata?.duration && (
                     <span 
                       style={{ color: colors.moss }}
                       className="text-xs font-medium"
                     >
-                      {resource.duration}
+                      {resource.metadata.duration}
                     </span>
                   )}
                 </div>
@@ -412,14 +343,14 @@ const FeaturedResources = () => {
                       }}
                       className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
                     >
-                      {resource.uploadedBy.charAt(0)}
+                      {resource.uploadedBy?.name?.charAt(0) || 'U'}
                     </div>
                     <div>
                       <p 
                         style={{ color: colors.pureWhite }}
                         className="text-xs font-medium"
                       >
-                        {resource.uploadedBy}
+                        {resource.uploadedBy?.name || 'Unknown'}
                       </p>
                       <div className="flex items-center space-x-1">
                         <Clock 
@@ -430,7 +361,7 @@ const FeaturedResources = () => {
                           style={{ color: colors.moss }}
                           className="text-xs"
                         >
-                          {resource.uploadedTime}
+                          {resource.createdAt ? new Date(resource.createdAt).toLocaleDateString() : 'Recently'}
                         </span>
                       </div>
                     </div>
@@ -455,7 +386,8 @@ const FeaturedResources = () => {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

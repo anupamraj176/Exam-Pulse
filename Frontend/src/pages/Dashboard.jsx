@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   User,
@@ -20,11 +20,47 @@ import {
   Video,
   Edit,
   Settings,
-  LogOut
+  LogOut,
+  Loader
 } from 'lucide-react';
+import useAuthStore from '../store/authStore';
+import useExamStore from '../store/examStore';
+import userService from '../services/userService';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuthStore();
+  const { upcomingExams, fetchUpcomingExams } = useExamStore();
+
+  // Fetch dashboard data on mount
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [statsResponse, activityResponse, bookmarksResponse] = await Promise.all([
+          userService.getUserStats().catch(() => ({ data: null })),
+          userService.getRecentActivity().catch(() => ({ data: { activities: [] } })),
+          userService.getBookmarks().catch(() => ({ data: { bookmarks: [] } })),
+        ]);
+        
+        setDashboardData({
+          stats: statsResponse.data?.stats || null,
+          recentActivity: activityResponse.data?.activities || [],
+          bookmarks: bookmarksResponse.data?.bookmarks || [],
+        });
+        
+        await fetchUpcomingExams();
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboardData();
+  }, [fetchUpcomingExams]);
 
   // Color palette
   const colors = {
@@ -38,16 +74,16 @@ const Dashboard = () => {
     pureWhite: '#FFFFFF',
   };
 
-  // Mock user data
+  // User data from auth store or defaults
   const userData = {
-    name: 'Arjun Sharma',
-    email: 'arjun.sharma@email.com',
-    targetExam: 'SSC CGL 2025',
-    examDate: '2025-08-15',
-    joinedDate: '2024-06-15',
-    studyStreak: 15,
-    totalStudyHours: 142,
-    avatar: 'AS',
+    name: user?.name || 'Guest User',
+    email: user?.email || 'guest@example.com',
+    targetExam: user?.preferences?.targetExam || 'SSC CGL 2025',
+    examDate: user?.preferences?.examDate || '2025-08-15',
+    joinedDate: user?.createdAt || new Date().toISOString(),
+    studyStreak: dashboardData?.stats?.studyStreak || 0,
+    totalStudyHours: dashboardData?.stats?.totalStudyHours || 0,
+    avatar: user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'GU',
   };
 
   // Stats data
@@ -72,109 +108,71 @@ const Dashboard = () => {
     },
     {
       label: 'Completed Topics',
-      value: 45,
+      value: dashboardData?.stats?.completedTopics || 0,
       unit: 'topics',
       icon: CheckCircle,
       color: colors.moss,
       bgColor: `${colors.moss}20`,
-      trend: '78% progress',
+      trend: `${dashboardData?.stats?.progressPercent || 0}% progress`,
     },
     {
       label: 'Bookmarked Items',
-      value: 23,
+      value: dashboardData?.bookmarks?.length || 0,
       unit: 'items',
       icon: Bookmark,
       color: colors.hotOrange,
       bgColor: `${colors.hotOrange}20`,
-      trend: '5 this week',
+      trend: 'this week',
     },
   ];
 
-  // Recent activity
-  const recentActivity = [
-    {
-      id: 1,
-      type: 'download',
-      title: 'Indian Polity Notes',
-      action: 'Downloaded',
-      time: '2 hours ago',
-      icon: Download,
-    },
-    {
-      id: 2,
-      type: 'complete',
-      title: 'Mathematics Chapter 5',
-      action: 'Completed',
-      time: '5 hours ago',
-      icon: CheckCircle,
-    },
-    {
-      id: 3,
-      type: 'bookmark',
-      title: 'English Grammar Guide',
-      action: 'Bookmarked',
-      time: '1 day ago',
-      icon: Bookmark,
-    },
-    {
-      id: 4,
-      type: 'view',
-      title: 'Reasoning PYQ 2023',
-      action: 'Viewed',
-      time: '2 days ago',
-      icon: Eye,
-    },
-  ];
+  // Recent activity from API or fallback
+  const recentActivity = dashboardData?.recentActivity?.length > 0 
+    ? dashboardData.recentActivity.map(activity => ({
+        id: activity._id,
+        type: activity.type,
+        title: activity.resource?.title || activity.title,
+        action: activity.action,
+        time: new Date(activity.createdAt).toLocaleDateString(),
+        icon: activity.type === 'download' ? Download : 
+              activity.type === 'complete' ? CheckCircle :
+              activity.type === 'bookmark' ? Bookmark : Eye,
+      }))
+    : [
+        { id: 1, type: 'download', title: 'Indian Polity Notes', action: 'Downloaded', time: '2 hours ago', icon: Download },
+        { id: 2, type: 'complete', title: 'Mathematics Chapter 5', action: 'Completed', time: '5 hours ago', icon: CheckCircle },
+        { id: 3, type: 'bookmark', title: 'English Grammar Guide', action: 'Bookmarked', time: '1 day ago', icon: Bookmark },
+      ];
 
-  // Bookmarked resources
-  const bookmarkedResources = [
-    {
-      id: 1,
-      title: 'Complete Indian Polity Notes',
-      category: 'UPSC',
-      type: 'notes',
-      thumbnail: '📚',
-      progress: 65,
-    },
-    {
-      id: 2,
-      title: 'SSC CGL Mathematics PYQ',
-      category: 'SSC',
-      type: 'pyq',
-      thumbnail: '🔢',
-      progress: 45,
-    },
-    {
-      id: 3,
-      title: 'English Grammar Masterclass',
-      category: 'All Exams',
-      type: 'video',
-      thumbnail: '🎥',
-      progress: 80,
-    },
-  ];
+  // Bookmarked resources from API or fallback
+  const bookmarkedResources = dashboardData?.bookmarks?.length > 0
+    ? dashboardData.bookmarks.slice(0, 6).map(item => ({
+        id: item._id,
+        title: item.resource?.title || item.title,
+        category: item.resource?.category || 'General',
+        type: item.resource?.type || 'notes',
+        thumbnail: item.resource?.type === 'video' ? '🎥' : item.resource?.type === 'pyq' ? '🔢' : '📚',
+        progress: item.progress || 0,
+      }))
+    : [
+        { id: 1, title: 'Complete Indian Polity Notes', category: 'UPSC', type: 'notes', thumbnail: '📚', progress: 65 },
+        { id: 2, title: 'SSC CGL Mathematics PYQ', category: 'SSC', type: 'pyq', thumbnail: '🔢', progress: 45 },
+        { id: 3, title: 'English Grammar Masterclass', category: 'All Exams', type: 'video', thumbnail: '🎥', progress: 80 },
+      ];
 
-  // Upcoming exams
-  const upcomingExams = [
-    {
-      name: 'SSC CGL Tier 1',
-      date: '2025-08-15',
-      daysLeft: 230,
-      status: 'upcoming',
-    },
-    {
-      name: 'SSC CHSL',
-      date: '2025-09-20',
-      daysLeft: 266,
-      status: 'upcoming',
-    },
-    {
-      name: 'IBPS PO Prelims',
-      date: '2025-10-05',
-      daysLeft: 281,
-      status: 'upcoming',
-    },
-  ];
+  // Upcoming exams from API or fallback
+  const examsList = upcomingExams?.length > 0
+    ? upcomingExams.map(exam => ({
+        name: exam.title || exam.name,
+        date: exam.examDate || exam.date,
+        daysLeft: Math.ceil((new Date(exam.examDate || exam.date) - new Date()) / (1000 * 60 * 60 * 24)),
+        status: 'upcoming',
+      }))
+    : [
+        { name: 'SSC CGL Tier 1', date: '2025-08-15', daysLeft: 230, status: 'upcoming' },
+        { name: 'SSC CHSL', date: '2025-09-20', daysLeft: 266, status: 'upcoming' },
+        { name: 'IBPS PO Prelims', date: '2025-10-05', daysLeft: 281, status: 'upcoming' },
+      ];
 
   // Study goals
   const studyGoals = [
@@ -210,6 +208,18 @@ const Dashboard = () => {
     { id: 'progress', name: 'Progress', icon: TrendingUp },
     { id: 'exams', name: 'Exams', icon: Calendar },
   ];
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div 
+        style={{ backgroundColor: colors.smokyBlack }}
+        className="min-h-screen pt-20 flex items-center justify-center"
+      >
+        <Loader style={{ color: colors.hotOrange }} className="h-10 w-10 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div 
@@ -637,7 +647,7 @@ const Dashboard = () => {
                 </h2>
 
                 <div className="space-y-4">
-                  {upcomingExams.map((exam, index) => (
+                  {examsList.map((exam, index) => (
                     <div
                       key={index}
                       style={{

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Menu, 
   X, 
@@ -14,14 +14,22 @@ import {
   Settings,
   Bookmark
 } from 'lucide-react';
+import useAuthStore from '../../store/authStore';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isExamDropdownOpen, setIsExamDropdownOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false); 
+  const { isAuthenticated, user, logout } = useAuthStore();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    setIsProfileDropdownOpen(false);
+    navigate('/');
+  };
 
   // Color palette
   const colors = {
@@ -339,7 +347,7 @@ const Navbar = () => {
                       }}
                       className="h-8 w-8 rounded-full flex items-center justify-center font-bold text-sm"
                     >
-                      A
+                      {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
                   </button>
 
@@ -413,6 +421,7 @@ const Navbar = () => {
                             e.currentTarget.style.backgroundColor = 'transparent';
                             e.currentTarget.style.color = colors.pureWhite;
                           }}
+                          onClick={handleLogout}
                         >
                           <LogOut className="h-4 w-4" />
                           <span className="text-sm font-medium">Logout</span>

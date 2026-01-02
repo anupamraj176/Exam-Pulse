@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import Home from './pages/Home';
@@ -13,21 +14,23 @@ import Notifications from './pages/Notifications';
 
 function App() {
   return (
-    <div style={{ backgroundColor: '#100C0B', minHeight: '100vh' }}>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/resources" element={<Resources />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/pyq" element={<PYQ />} />
-        <Route path="/study-rooms" element={<StudyRooms />} />
-        <Route path="/exams/:examId" element={<ExamDetail />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/notifications" element={<Notifications />} />
-      </Routes>
-      <Footer />
-    </div>
+    <ErrorBoundary>
+      <div style={{ backgroundColor: '#100C0B', minHeight: '100vh' }}>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/resources" element={<Resources />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/pyq" element={<PYQ />} />
+          <Route path="/study-rooms" element={<StudyRooms />} />
+          <Route path="/exams/:examId" element={<ExamDetail />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/notifications" element={<Notifications />} />
+        </Routes>
+        <Footer />
+      </div>
+    </ErrorBoundary>
   );
 }
 

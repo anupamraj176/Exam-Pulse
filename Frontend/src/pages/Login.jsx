@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Mail, 
@@ -11,15 +11,28 @@ import {
   CheckCircle,
   Loader
 } from 'lucide-react';
+import useAuthStore from '../store/authStore';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
   const navigate = useNavigate();
+  
+  const { login, isLoading, error, isAuthenticated, clearError } = useAuthStore();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Clear error on unmount
+  useEffect(() => {
+    return () => clearError();
+  }, [clearError]);
 
   // Color palette
   const colors = {
@@ -35,33 +48,23 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     
     // Basic validation
     if (!email || !password) {
-      setError('Please fill in all fields');
       return;
     }
 
-    if (!email.includes('@')) {
-      setError('Please enter a valid email address');
-      return;
-    }
-
-    setIsLoading(true);
+    const result = await login({ email, password });
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      // In real app, handle actual login logic here
+    if (result.success) {
       navigate('/dashboard');
-    }, 2000);
+    }
   };
 
   return (
     <div 
       style={{ backgroundColor: colors.smokyBlack }}
-      className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+      className="min-h-screen flex items-center justify-center pt-24 pb-12 px-4 sm:px-6 lg:px-8"
     >
       {/* Background Decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

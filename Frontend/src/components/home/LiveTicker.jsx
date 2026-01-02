@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { AlertCircle, Bell, Calendar, FileText, TrendingUp } from 'lucide-react';
+import { AlertCircle, Bell, Calendar, FileText, TrendingUp, Award, Clock } from 'lucide-react';
+import useNotificationStore from '../../store/notificationStore';
 
 const LiveTicker = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const { tickerNotifications, fetchTickerNotifications } = useNotificationStore();
 
   // Color palette
   const colors = {
@@ -16,51 +18,40 @@ const LiveTicker = () => {
     pureWhite: '#FFFFFF',
   };
 
-  // Notification data
-  const notifications = [
+  // Fetch notifications on mount
+  useEffect(() => {
+    fetchTickerNotifications();
+  }, [fetchTickerNotifications]);
+
+  // Icon mapping for notification types
+  const getIconForType = (type) => {
+    const iconMap = {
+      'urgent': AlertCircle,
+      'exam-update': Calendar,
+      'result': Award,
+      'new-vacancy': Bell,
+      'deadline': Clock,
+      'resource': FileText,
+      'admit-card': FileText,
+      'system': Bell,
+    };
+    return iconMap[type] || Bell;
+  };
+
+  // Fallback notifications if no data from API
+  const fallbackNotifications = [
     {
-      icon: AlertCircle,
-      type: 'URGENT',
+      _id: '1',
+      icon: '⚠️',
+      type: 'urgent',
+      title: 'Loading notifications...',
       message: 'SSC CGL 2025 Notification Released - Apply Before Jan 15, 2025',
-      time: '2 hours ago',
       color: colors.hotOrange,
-    },
-    {
-      icon: Calendar,
-      type: 'EXAM DATE',
-      message: 'IBPS PO Mains Exam Scheduled for February 5, 2025',
-      time: '4 hours ago',
-      color: colors.orangeWheel,
-    },
-    {
-      icon: FileText,
-      type: 'RESULT',
-      message: 'RRB NTPC Result Declared - Check Your Score Now',
-      time: '6 hours ago',
-      color: colors.moss,
-    },
-    {
-      icon: Bell,
-      type: 'NEW VACANCY',
-      message: 'UPSC CSE 2025: 1000+ Vacancies Announced for Civil Services',
-      time: '8 hours ago',
-      color: colors.hotOrange,
-    },
-    {
-      icon: TrendingUp,
-      type: 'TRENDING',
-      message: 'New Study Material Added: Indian Polity Complete Notes PDF',
-      time: '10 hours ago',
-      color: colors.orangeWheel,
-    },
-    {
-      icon: AlertCircle,
-      type: 'UPDATE',
-      message: 'BPSC 69th CCE Exam Pattern Changed - Check Latest Updates',
-      time: '12 hours ago',
-      color: colors.moss,
+      createdAt: new Date(),
     },
   ];
+
+  const notifications = tickerNotifications.length > 0 ? tickerNotifications : fallbackNotifications;
 
   // Auto-rotate notifications
   useEffect(() => {
@@ -71,8 +62,10 @@ const LiveTicker = () => {
     return () => clearInterval(interval);
   }, [notifications.length]);
 
-  const currentNotification = notifications[currentIndex];
-  const Icon = currentNotification.icon;
+  // Safety check - if no notifications, show nothing
+  if (!notifications || notifications.length === 0) {
+    return null;
+  }
 
   return (
     <div 
@@ -109,35 +102,38 @@ const LiveTicker = () => {
               }}
             >
               {notifications.map((notification, index) => {
-                const NotifIcon = notification.icon;
+                const NotifIcon = getIconForType(notification.type);
+                const timeAgo = notification.createdAt 
+                  ? new Date(notification.createdAt).toLocaleString() 
+                  : 'Recently';
                 return (
                   <div
-                    key={index}
+                    key={notification._id || index}
                     className="flex items-center space-x-3 min-w-full"
                   >
                     <div
                       style={{
-                        backgroundColor: `${notification.color}20`,
-                        color: notification.color,
+                        backgroundColor: `${notification.color || colors.hotOrange}20`,
+                        color: notification.color || colors.hotOrange,
                       }}
                       className="flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
                     >
                       <NotifIcon className="h-3 w-3" />
-                      <span>{notification.type}</span>
+                      <span>{notification.type?.toUpperCase().replace('-', ' ') || 'UPDATE'}</span>
                     </div>
 
                     <p
                       style={{ color: colors.pureWhite }}
                       className="text-sm md:text-base font-medium flex-1"
                     >
-                      {notification.message}
+                      {notification.message || notification.title}
                     </p>
 
                     <span
                       style={{ color: colors.moss }}
                       className="text-xs whitespace-nowrap hidden md:inline"
                     >
-                      {notification.time}
+                      {timeAgo}
                     </span>
                   </div>
                 );
