@@ -222,10 +222,10 @@ const seedDatabase = async () => {
     // Create admin user
     console.log('👤 Creating admin user...');
     const adminUser = await User.create({
-      name: 'Admin User',
-      email: 'admin@exampulse.com',
+      name: 'Anupam Raj',
+      email: 'anupamraj176@gmail.com',
       phone: '9999999999',
-      password: 'Admin@123',
+      password: 'Mummypapa143@#',
       role: 'admin',
       isVerified: true,
     });
@@ -710,7 +710,7 @@ const seedDatabase = async () => {
     console.log('✅ Database seeded successfully!');
     console.log('');
     console.log('📋 Created:');
-    console.log(`   - ${2} users (admin@exampulse.com / Admin@123)`);
+    console.log(`   - ${2} users (anupamraj176@gmail.com / Mummypapa143@#)`);
     console.log(`   - ${createdExams.length} exams`);
     console.log(`   - ${resources.length} resources`);
     console.log(`   - ${notifications.length} notifications`);
