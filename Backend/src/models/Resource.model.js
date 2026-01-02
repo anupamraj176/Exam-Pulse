@@ -34,7 +34,7 @@ const resourceSchema = new mongoose.Schema(
     subject: {
       type: String,
       required: true,
-      enum: ['math', 'reasoning', 'english', 'gk', 'science', 'polity', 'history', 'geography', 'economy', 'computer', 'other'],
+      enum: ['math', 'reasoning', 'english', 'gk', 'science', 'polity', 'history', 'geography', 'economy', 'computer', 'current-affairs', 'other'],
     },
     tags: [{
       type: String,

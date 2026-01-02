@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   FileText, 
   Download, 
   Eye, 
   Search,
   Filter,
-  ChevronDown,
   Calendar,
   Clock,
   CheckCircle,
@@ -14,8 +13,10 @@ import {
   Award,
   BookOpen,
   X,
-  ExternalLink
+  ExternalLink,
+  Loader
 } from 'lucide-react';
+import api from '../services/api';
 
 const PYQ = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,8 +24,15 @@ const PYQ = () => {
   const [selectedYear, setSelectedYear] = useState('all');
   const [selectedSubject, setSelectedSubject] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [pyqData, setPyqData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalPYQs: 0,
+    totalDownloads: 0,
+    totalExams: 0,
+    yearsAvailable: 0
+  });
 
-  // Color palette
   const colors = {
     smokyBlack: '#100C0B',
     eerieLight: '#282723',
@@ -38,13 +46,12 @@ const PYQ = () => {
 
   const examFilters = [
     { id: 'all', name: 'All Exams' },
-    { id: 'ssc-cgl', name: 'SSC CGL' },
-    { id: 'ssc-chsl', name: 'SSC CHSL' },
-    { id: 'ibps-po', name: 'IBPS PO' },
-    { id: 'ibps-clerk', name: 'IBPS Clerk' },
-    { id: 'sbi-po', name: 'SBI PO' },
-    { id: 'rrb-ntpc', name: 'RRB NTPC' },
-    { id: 'upsc-cse', name: 'UPSC CSE' },
+    { id: 'SSC', name: 'SSC' },
+    { id: 'Banking', name: 'Banking' },
+    { id: 'Railways', name: 'Railways' },
+    { id: 'UPSC', name: 'UPSC' },
+    { id: 'State PSC', name: 'State PSC' },
+    { id: 'Defence', name: 'Defence' },
   ];
 
   const yearFilters = [
@@ -54,11 +61,6 @@ const PYQ = () => {
     { id: '2022', name: '2022' },
     { id: '2021', name: '2021' },
     { id: '2020', name: '2020' },
-    { id: '2019', name: '2019' },
-    { id: '2018', name: '2018' },
-    { id: '2017', name: '2017' },
-    { id: '2016', name: '2016' },
-    { id: '2015', name: '2015' },
   ];
 
   const subjectFilters = [
@@ -68,172 +70,53 @@ const PYQ = () => {
     { id: 'english', name: 'English' },
     { id: 'gk', name: 'General Knowledge' },
     { id: 'computer', name: 'Computer' },
+    { id: 'current-affairs', name: 'Current Affairs' },
   ];
 
-  const pyqData = [
-    {
-      id: 1,
-      exam: 'SSC CGL',
-      examId: 'ssc-cgl',
-      year: 2024,
-      subject: 'Mathematics',
-      subjectId: 'math',
-      shift: 'Tier 1 - All Shifts',
-      totalQuestions: 100,
-      duration: '60 minutes',
-      downloads: 15400,
-      views: 28900,
-      rating: 4.8,
-      solutions: true,
-      language: ['English', 'Hindi'],
-      uploadDate: '2024-12-20',
-      trending: true,
-      difficulty: 'Medium',
-    },
-    {
-      id: 2,
-      exam: 'SSC CGL',
-      examId: 'ssc-cgl',
-      year: 2023,
-      subject: 'Reasoning',
-      subjectId: 'reasoning',
-      shift: 'Tier 1 - Shift 1',
-      totalQuestions: 75,
-      duration: '60 minutes',
-      downloads: 12800,
-      views: 24500,
-      rating: 4.7,
-      solutions: true,
-      language: ['English', 'Hindi'],
-      uploadDate: '2024-11-15',
-      trending: true,
-      difficulty: 'Medium',
-    },
-    {
-      id: 3,
-      exam: 'IBPS PO',
-      examId: 'ibps-po',
-      year: 2024,
-      subject: 'English',
-      subjectId: 'english',
-      shift: 'Prelims',
-      totalQuestions: 30,
-      duration: '20 minutes',
-      downloads: 9800,
-      views: 18200,
-      rating: 4.6,
-      solutions: true,
-      language: ['English'],
-      uploadDate: '2024-12-10',
-      trending: false,
-      difficulty: 'Easy',
-    },
-    {
-      id: 4,
-      exam: 'SBI PO',
-      examId: 'sbi-po',
-      year: 2023,
-      subject: 'Mathematics',
-      subjectId: 'math',
-      shift: 'Prelims',
-      totalQuestions: 35,
-      duration: '20 minutes',
-      downloads: 11200,
-      views: 21600,
-      rating: 4.9,
-      solutions: true,
-      language: ['English', 'Hindi'],
-      uploadDate: '2024-10-25',
-      trending: false,
-      difficulty: 'Hard',
-    },
-    {
-      id: 5,
-      exam: 'RRB NTPC',
-      examId: 'rrb-ntpc',
-      year: 2024,
-      subject: 'General Knowledge',
-      subjectId: 'gk',
-      shift: 'All Shifts',
-      totalQuestions: 100,
-      duration: '90 minutes',
-      downloads: 18900,
-      views: 34200,
-      rating: 4.8,
-      solutions: true,
-      language: ['English', 'Hindi'],
-      uploadDate: '2024-12-01',
-      trending: true,
-      difficulty: 'Medium',
-    },
-    {
-      id: 6,
-      exam: 'SSC CHSL',
-      examId: 'ssc-chsl',
-      year: 2023,
-      subject: 'English',
-      subjectId: 'english',
-      shift: 'Tier 1 - All Shifts',
-      totalQuestions: 100,
-      duration: '60 minutes',
-      downloads: 13400,
-      views: 25800,
-      rating: 4.7,
-      solutions: true,
-      language: ['English', 'Hindi'],
-      uploadDate: '2024-11-20',
-      trending: false,
-      difficulty: 'Easy',
-    },
-    {
-      id: 7,
-      exam: 'IBPS Clerk',
-      examId: 'ibps-clerk',
-      year: 2024,
-      subject: 'Reasoning',
-      subjectId: 'reasoning',
-      shift: 'Prelims',
-      totalQuestions: 35,
-      duration: '20 minutes',
-      downloads: 10500,
-      views: 19800,
-      rating: 4.6,
-      solutions: true,
-      language: ['English', 'Hindi'],
-      uploadDate: '2024-12-05',
-      trending: false,
-      difficulty: 'Medium',
-    },
-    {
-      id: 8,
-      exam: 'SSC CGL',
-      examId: 'ssc-cgl',
-      year: 2022,
-      subject: 'General Knowledge',
-      subjectId: 'gk',
-      shift: 'Tier 1 - All Shifts',
-      totalQuestions: 100,
-      duration: '60 minutes',
-      downloads: 16700,
-      views: 31200,
-      rating: 4.9,
-      solutions: true,
-      language: ['English', 'Hindi'],
-      uploadDate: '2024-09-10',
-      trending: true,
-      difficulty: 'Hard',
-    },
-  ];
+  useEffect(() => {
+    fetchPYQs();
+  }, [selectedExam, selectedSubject]);
 
-  // Filter PYQs
+  const fetchPYQs = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      params.append('type', 'pyq');
+      if (selectedExam !== 'all') params.append('category', selectedExam);
+      if (selectedSubject !== 'all') params.append('subject', selectedSubject);
+      
+      const response = await api.get(`/resources?${params.toString()}`);
+      
+      if (response.data.success) {
+        const resources = response.data.data.resources || [];
+        setPyqData(resources);
+        
+        // Calculate stats
+        const totalDownloads = resources.reduce((acc, r) => acc + (r.stats?.downloads || 0), 0);
+        const uniqueCategories = [...new Set(resources.map(r => r.category))];
+        
+        setStats({
+          totalPYQs: resources.length,
+          totalDownloads,
+          totalExams: uniqueCategories.length,
+          yearsAvailable: 5
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch PYQs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filter PYQs locally for search and year
   const filteredPYQs = pyqData.filter(pyq => {
-    const matchesSearch = pyq.exam.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         pyq.subject.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesExam = selectedExam === 'all' || pyq.examId === selectedExam;
-    const matchesYear = selectedYear === 'all' || pyq.year.toString() === selectedYear;
-    const matchesSubject = selectedSubject === 'all' || pyq.subjectId === selectedSubject;
+    const matchesSearch = !searchQuery || 
+      pyq.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      pyq.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesYear = selectedYear === 'all' || pyq.year?.toString() === selectedYear;
     
-    return matchesSearch && matchesExam && matchesYear && matchesSubject;
+    return matchesSearch && matchesYear;
   });
 
   const getDifficultyColor = (difficulty) => {
@@ -250,6 +133,12 @@ const PYQ = () => {
     setSelectedExam('all');
     setSelectedYear('all');
     setSelectedSubject('all');
+  };
+
+  const formatNumber = (num) => {
+    if (!num) return '0';
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    return num.toString();
   };
 
   return (
@@ -299,492 +188,318 @@ const PYQ = () => {
 
           {/* Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-            <div 
-              style={{
-                backgroundColor: `${colors.eerieBlack}80`,
-                backdropFilter: 'blur(10px)',
-              }}
-              className="p-4 rounded-xl"
-            >
-              <FileText style={{ color: colors.hotOrange }} className="h-6 w-6 mb-2" />
-              <p style={{ color: colors.pureWhite }} className="text-2xl font-bold">500+</p>
-              <p style={{ color: colors.moss }} className="text-sm">Question Papers</p>
-            </div>
-            <div 
-              style={{
-                backgroundColor: `${colors.eerieBlack}80`,
-                backdropFilter: 'blur(10px)',
-              }}
-              className="p-4 rounded-xl"
-            >
-              <CheckCircle style={{ color: colors.orangeWheel }} className="h-6 w-6 mb-2" />
-              <p style={{ color: colors.pureWhite }} className="text-2xl font-bold">100%</p>
-              <p style={{ color: colors.moss }} className="text-sm">With Solutions</p>
-            </div>
-            <div 
-              style={{
-                backgroundColor: `${colors.eerieBlack}80`,
-                backdropFilter: 'blur(10px)',
-              }}
-              className="p-4 rounded-xl"
-            >
-              <Award style={{ color: colors.moss }} className="h-6 w-6 mb-2" />
-              <p style={{ color: colors.pureWhite }} className="text-2xl font-bold">15+</p>
-              <p style={{ color: colors.moss }} className="text-sm">Major Exams</p>
-            </div>
-            <div 
-              style={{
-                backgroundColor: `${colors.eerieBlack}80`,
-                backdropFilter: 'blur(10px)',
-              }}
-              className="p-4 rounded-xl"
-            >
-              <Download style={{ color: colors.hotOrange }} className="h-6 w-6 mb-2" />
-              <p style={{ color: colors.pureWhite }} className="text-2xl font-bold">50k+</p>
-              <p style={{ color: colors.moss }} className="text-sm">Downloads</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* Search and Filter Bar */}
-        <div className="mb-8">
-          <div className="flex flex-col lg:flex-row gap-4 mb-4">
-            {/* Search Bar */}
-            <div 
-              style={{
-                backgroundColor: colors.eerieBlack,
-                borderColor: `${colors.moss}30`,
-              }}
-              className="flex items-center px-4 py-3 rounded-xl border-2 flex-1"
-            >
-              <Search style={{ color: colors.moss }} className="h-5 w-5 mr-3" />
-              <input
-                type="text"
-                placeholder="Search by exam or subject..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  backgroundColor: 'transparent',
-                  color: colors.pureWhite,
-                }}
-                className="flex-1 outline-none text-sm placeholder-gray-500"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  style={{ color: colors.moss }}
-                  className="hover:text-hotOrange transition-colors"
+            {[
+              { label: 'Total PYQs', value: stats.totalPYQs, icon: FileText },
+              { label: 'Downloads', value: formatNumber(stats.totalDownloads), icon: Download },
+              { label: 'Exams Covered', value: stats.totalExams, icon: Award },
+              { label: 'Years Available', value: stats.yearsAvailable, icon: Calendar },
+            ].map((stat, index) => (
+              <div 
+                key={index}
+                style={{ backgroundColor: `${colors.eerieBlack}90`, borderColor: `${colors.moss}30` }}
+                className="p-4 rounded-xl border-2 flex items-center space-x-3"
+              >
+                <div 
+                  style={{ backgroundColor: `${colors.hotOrange}20` }}
+                  className="p-2 rounded-lg"
                 >
-                  <X className="h-5 w-5" />
-                </button>
-              )}
-            </div>
-
-            {/* Mobile Filter Toggle */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              style={{
-                backgroundColor: colors.eerieBlack,
-                borderColor: `${colors.hotOrange}30`,
-                color: colors.pureWhite,
-              }}
-              className="lg:hidden flex items-center justify-center space-x-2 px-6 py-3 rounded-xl border-2 font-semibold"
-            >
-              <Filter className="h-5 w-5" />
-              <span>Filters</span>
-            </button>
-          </div>
-
-          {/* Desktop Filters */}
-          <div className={`${showFilters ? 'block' : 'hidden'} lg:block`}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Exam Filter */}
-              <select
-                value={selectedExam}
-                onChange={(e) => setSelectedExam(e.target.value)}
-                style={{
-                  backgroundColor: colors.eerieBlack,
-                  borderColor: `${colors.moss}30`,
-                  color: colors.pureWhite,
-                }}
-                className="appearance-none px-4 py-3 pr-10 rounded-xl border-2 text-sm outline-none cursor-pointer"
-              >
-                {examFilters.map(exam => (
-                  <option key={exam.id} value={exam.id}>
-                    {exam.name}
-                  </option>
-                ))}
-              </select>
-
-              {/* Year Filter */}
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-                style={{
-                  backgroundColor: colors.eerieBlack,
-                  borderColor: `${colors.moss}30`,
-                  color: colors.pureWhite,
-                }}
-                className="appearance-none px-4 py-3 pr-10 rounded-xl border-2 text-sm outline-none cursor-pointer"
-              >
-                {yearFilters.map(year => (
-                  <option key={year.id} value={year.id}>
-                    {year.name}
-                  </option>
-                ))}
-              </select>
-
-              {/* Subject Filter */}
-              <select
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-                style={{
-                  backgroundColor: colors.eerieBlack,
-                  borderColor: `${colors.moss}30`,
-                  color: colors.pureWhite,
-                }}
-                className="appearance-none px-4 py-3 pr-10 rounded-xl border-2 text-sm outline-none cursor-pointer"
-              >
-                {subjectFilters.map(subject => (
-                  <option key={subject.id} value={subject.id}>
-                    {subject.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Active Filters */}
-          {(searchQuery || selectedExam !== 'all' || selectedYear !== 'all' || selectedSubject !== 'all') && (
-            <div className="flex items-center space-x-2 mt-4">
-              <span style={{ color: colors.moss }} className="text-sm">
-                Active filters:
-              </span>
-              <button
-                onClick={clearFilters}
-                style={{
-                  backgroundColor: `${colors.hotOrange}20`,
-                  color: colors.hotOrange,
-                }}
-                className="px-3 py-1 rounded-lg text-xs font-semibold hover:bg-opacity-80 transition-all"
-              >
-                Clear All
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Results Count */}
-        <div className="mb-6">
-          <p style={{ color: colors.moss }} className="text-sm">
-            Showing <span style={{ color: colors.pureWhite }} className="font-bold">{filteredPYQs.length}</span> question papers
-          </p>
-        </div>
-
-        {/* PYQ Grid */}
-        {filteredPYQs.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {filteredPYQs.map((pyq) => (
-              <div
-                key={pyq.id}
-                style={{
-                  backgroundColor: colors.eerieBlack,
-                  borderColor: `${colors.moss}20`,
-                }}
-                className="rounded-2xl border-2 p-6 transition-all duration-300 group hover:shadow-2xl"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = colors.hotOrange;
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = `${colors.moss}20`;
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <div className="flex items-center space-x-2 mb-2">
-                      <h3 
-                        style={{ color: colors.pureWhite }}
-                        className="text-xl font-bold"
-                      >
-                        {pyq.exam} {pyq.year}
-                      </h3>
-                      {pyq.trending && (
-                        <div 
-                          style={{
-                            backgroundColor: `${colors.hotOrange}20`,
-                            color: colors.hotOrange,
-                          }}
-                          className="flex items-center space-x-1 px-2 py-0.5 rounded-full text-xs font-bold"
-                        >
-                          <TrendingUp className="h-3 w-3" />
-                          <span>Trending</span>
-                        </div>
-                      )}
-                    </div>
-                    <p 
-                      style={{ color: colors.moss }}
-                      className="text-sm"
-                    >
-                      {pyq.shift}
-                    </p>
-                  </div>
-
-                  <div 
-                    style={{
-                      background: `linear-gradient(135deg, ${colors.hotOrange}20, ${colors.orangeWheel}20)`,
-                    }}
-                    className="px-3 py-2 rounded-xl text-center"
-                  >
-                    <p 
-                      style={{ color: colors.hotOrange }}
-                      className="text-2xl font-bold leading-none"
-                    >
-                      {pyq.year}
-                    </p>
-                  </div>
+                  <stat.icon style={{ color: colors.hotOrange }} className="h-5 w-5" />
                 </div>
-
-                {/* Subject Badge */}
-                <div className="flex items-center space-x-2 mb-4">
-                  <span
-                    style={{
-                      backgroundColor: `${getDifficultyColor(pyq.difficulty)}20`,
-                      color: getDifficultyColor(pyq.difficulty),
-                    }}
-                    className="px-3 py-1 rounded-full text-xs font-semibold"
-                  >
-                    {pyq.subject}
-                  </span>
-                  <span
-                    style={{
-                      backgroundColor: `${colors.moss}20`,
-                      color: colors.moss,
-                    }}
-                    className="px-3 py-1 rounded-full text-xs font-semibold"
-                  >
-                    {pyq.difficulty}
-                  </span>
-                  {pyq.solutions && (
-                    <div className="flex items-center space-x-1">
-                      <CheckCircle 
-                        style={{ color: colors.moss }}
-                        className="h-4 w-4"
-                      />
-                      <span 
-                        style={{ color: colors.moss }}
-                        className="text-xs font-medium"
-                      >
-                        With Solutions
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Details Grid */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <div className="flex items-center space-x-2 mb-1">
-                      <BookOpen 
-                        style={{ color: colors.orangeWheel }}
-                        className="h-4 w-4"
-                      />
-                      <span 
-                        style={{ color: colors.moss }}
-                        className="text-xs"
-                      >
-                        Questions
-                      </span>
-                    </div>
-                    <p 
-                      style={{ color: colors.pureWhite }}
-                      className="text-lg font-bold"
-                    >
-                      {pyq.totalQuestions}
-                    </p>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center space-x-2 mb-1">
-                      <Clock 
-                        style={{ color: colors.orangeWheel }}
-                        className="h-4 w-4"
-                      />
-                      <span 
-                        style={{ color: colors.moss }}
-                        className="text-xs"
-                      >
-                        Duration
-                      </span>
-                    </div>
-                    <p 
-                      style={{ color: colors.pureWhite }}
-                      className="text-lg font-bold"
-                    >
-                      {pyq.duration}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Languages */}
-                <div className="flex items-center space-x-2 mb-4">
-                  <span 
-                    style={{ color: colors.moss }}
-                    className="text-xs"
-                  >
-                    Available in:
-                  </span>
-                  {pyq.language.map((lang, idx) => (
-                    <span
-                      key={idx}
-                      style={{
-                        backgroundColor: colors.eerieLight,
-                        color: colors.moss,
-                      }}
-                      className="px-2 py-0.5 rounded text-xs"
-                    >
-                      {lang}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Stats */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center space-x-1">
-                      <Star 
-                        style={{ color: colors.orangeWheel }}
-                        className="h-4 w-4 fill-current"
-                      />
-                      <span 
-                        style={{ color: colors.pureWhite }}
-                        className="text-sm font-semibold"
-                      >
-                        {pyq.rating}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center space-x-1">
-                      <Download 
-                        style={{ color: colors.moss }}
-                        className="h-4 w-4"
-                      />
-                      <span 
-                        style={{ color: colors.moss }}
-                        className="text-xs"
-                      >
-                        {(pyq.downloads / 1000).toFixed(1)}k
-                      </span>
-                    </div>
-
-                    <div className="flex items-center space-x-1">
-                      <Eye 
-                        style={{ color: colors.moss }}
-                        className="h-4 w-4"
-                      />
-                      <span 
-                        style={{ color: colors.moss }}
-                        className="text-xs"
-                      >
-                        {(pyq.views / 1000).toFixed(1)}k
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-1">
-                    <Calendar 
-                      style={{ color: colors.moss }}
-                      className="h-3 w-3"
-                    />
-                    <span 
-                      style={{ color: colors.moss }}
-                      className="text-xs"
-                    >
-                      {new Date(pyq.uploadDate).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex items-center space-x-3">
-                  <button
-                    style={{
-                      background: `linear-gradient(to right, ${colors.hotOrange}, ${colors.orangeWheel})`,
-                      color: colors.pureWhite,
-                    }}
-                    className="flex-1 py-3 rounded-xl font-semibold flex items-center justify-center space-x-2 transition-all duration-200"
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'scale(1.02)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'scale(1)';
-                    }}
-                  >
-                    <Download className="h-5 w-5" />
-                    <span>Download PDF</span>
-                  </button>
-
-                  <button
-                    style={{
-                      backgroundColor: colors.smokyBlack,
-                      borderColor: `${colors.moss}30`,
-                      color: colors.moss,
-                    }}
-                    className="p-3 rounded-xl border-2 transition-all duration-200"
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = colors.hotOrange;
-                      e.currentTarget.style.color = colors.hotOrange;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = `${colors.moss}30`;
-                      e.currentTarget.style.color = colors.moss;
-                    }}
-                  >
-                    <ExternalLink className="h-5 w-5" />
-                  </button>
+                <div>
+                  <p style={{ color: colors.pureWhite }} className="text-xl font-bold">
+                    {stat.value}
+                  </p>
+                  <p style={{ color: colors.moss }} className="text-xs">
+                    {stat.label}
+                  </p>
                 </div>
               </div>
             ))}
           </div>
-        ) : (
-          <div 
-            style={{
-              backgroundColor: colors.eerieBlack,
-              borderColor: `${colors.moss}30`,
-            }}
-            className="text-center py-16 rounded-2xl border-2"
-          >
-            <FileText 
-              style={{ color: colors.moss }}
-              className="h-16 w-16 mx-auto mb-4 opacity-50"
+        </div>
+      </div>
+
+      {/* Filters Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Search and Filter Toggle */}
+        <div className="flex flex-col lg:flex-row lg:items-center gap-4 mb-6">
+          {/* Search */}
+          <div className="flex-1 relative">
+            <Search 
+              style={{ color: colors.moss }} 
+              className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5" 
             />
-            <h3 
-              style={{ color: colors.pureWhite }}
-              className="text-xl font-bold mb-2"
-            >
-              No Question Papers Found
-            </h3>
-            <p 
-              style={{ color: colors.moss }}
-              className="mb-6"
-            >
-              Try adjusting your filters or search query
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search PYQs by name, exam, or subject..."
+              style={{ 
+                backgroundColor: colors.eerieBlack, 
+                borderColor: `${colors.moss}30`,
+                color: colors.pureWhite,
+              }}
+              className="w-full pl-12 pr-4 py-3 rounded-xl border-2 outline-none focus:border-opacity-60 transition-all"
+            />
+          </div>
+
+          {/* Filter Toggle Button */}
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            style={{ 
+              backgroundColor: showFilters ? colors.hotOrange : colors.eerieBlack,
+              borderColor: showFilters ? colors.hotOrange : `${colors.moss}30`,
+            }}
+            className="flex items-center space-x-2 px-4 py-3 rounded-xl border-2 font-medium transition-all"
+          >
+            <Filter style={{ color: showFilters ? colors.pureWhite : colors.moss }} className="h-5 w-5" />
+            <span style={{ color: showFilters ? colors.pureWhite : colors.moss }}>Filters</span>
+          </button>
+        </div>
+
+        {/* Expanded Filters */}
+        {showFilters && (
+          <div 
+            style={{ backgroundColor: colors.eerieBlack, borderColor: `${colors.moss}30` }}
+            className="rounded-2xl border-2 p-6 mb-6"
+          >
+            <div className="flex flex-col lg:flex-row lg:items-end gap-6">
+              {/* Exam Filter */}
+              <div className="flex-1">
+                <label style={{ color: colors.moss }} className="block text-sm font-medium mb-2">
+                  Exam Category
+                </label>
+                <select
+                  value={selectedExam}
+                  onChange={(e) => setSelectedExam(e.target.value)}
+                  style={{ 
+                    backgroundColor: colors.night, 
+                    borderColor: `${colors.moss}30`,
+                    color: colors.pureWhite,
+                  }}
+                  className="w-full px-4 py-3 rounded-xl border-2 outline-none"
+                >
+                  {examFilters.map(filter => (
+                    <option key={filter.id} value={filter.id}>{filter.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Year Filter */}
+              <div className="flex-1">
+                <label style={{ color: colors.moss }} className="block text-sm font-medium mb-2">
+                  Year
+                </label>
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  style={{ 
+                    backgroundColor: colors.night, 
+                    borderColor: `${colors.moss}30`,
+                    color: colors.pureWhite,
+                  }}
+                  className="w-full px-4 py-3 rounded-xl border-2 outline-none"
+                >
+                  {yearFilters.map(filter => (
+                    <option key={filter.id} value={filter.id}>{filter.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Subject Filter */}
+              <div className="flex-1">
+                <label style={{ color: colors.moss }} className="block text-sm font-medium mb-2">
+                  Subject
+                </label>
+                <select
+                  value={selectedSubject}
+                  onChange={(e) => setSelectedSubject(e.target.value)}
+                  style={{ 
+                    backgroundColor: colors.night, 
+                    borderColor: `${colors.moss}30`,
+                    color: colors.pureWhite,
+                  }}
+                  className="w-full px-4 py-3 rounded-xl border-2 outline-none"
+                >
+                  {subjectFilters.map(filter => (
+                    <option key={filter.id} value={filter.id}>{filter.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Clear Filters */}
+              <button
+                onClick={clearFilters}
+                style={{ backgroundColor: `${colors.hotOrange}20` }}
+                className="px-6 py-3 rounded-xl flex items-center space-x-2"
+              >
+                <X style={{ color: colors.hotOrange }} className="h-5 w-5" />
+                <span style={{ color: colors.hotOrange }}>Clear</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Results Count */}
+        <div className="flex items-center justify-between mb-6">
+          <p style={{ color: colors.moss }}>
+            Showing <span style={{ color: colors.pureWhite }} className="font-bold">{filteredPYQs.length}</span> results
+          </p>
+        </div>
+
+        {/* Loading State */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader style={{ color: colors.hotOrange }} className="h-10 w-10 animate-spin" />
+          </div>
+        ) : filteredPYQs.length === 0 ? (
+          <div 
+            style={{ backgroundColor: colors.eerieBlack, borderColor: `${colors.moss}30` }}
+            className="rounded-2xl border-2 p-12 text-center"
+          >
+            <FileText style={{ color: colors.moss }} className="h-16 w-16 mx-auto mb-4 opacity-50" />
+            <h2 style={{ color: colors.pureWhite }} className="text-xl font-bold mb-2">
+              No PYQs Found
+            </h2>
+            <p style={{ color: colors.moss }} className="mb-4">
+              {searchQuery || selectedExam !== 'all' || selectedYear !== 'all' || selectedSubject !== 'all'
+                ? 'Try adjusting your filters or search query'
+                : 'No previous year questions have been uploaded yet'
+              }
             </p>
             <button
               onClick={clearFilters}
-              style={{
-                background: `linear-gradient(to right, ${colors.hotOrange}, ${colors.orangeWheel})`,
-                color: colors.pureWhite,
-              }}
-              className="px-6 py-3 rounded-xl font-semibold"
+              style={{ backgroundColor: colors.hotOrange }}
+              className="px-6 py-3 rounded-xl text-white font-semibold"
             >
               Clear Filters
             </button>
+          </div>
+        ) : (
+          /* PYQ Grid */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredPYQs.map((pyq) => (
+              <div
+                key={pyq._id}
+                style={{ 
+                  backgroundColor: colors.eerieBlack, 
+                  borderColor: `${colors.moss}30`,
+                }}
+                className="rounded-2xl border-2 overflow-hidden hover:border-opacity-60 transition-all group"
+              >
+                {/* Header */}
+                <div 
+                  style={{ 
+                    background: `linear-gradient(135deg, ${colors.night} 0%, ${colors.eerieBlack} 100%)`,
+                  }}
+                  className="p-5 border-b"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <span 
+                        style={{ backgroundColor: colors.hotOrange }}
+                        className="px-2 py-1 rounded-lg text-white text-xs font-bold"
+                      >
+                        {pyq.category}
+                      </span>
+                      {pyq.isTrending && (
+                        <span 
+                          style={{ backgroundColor: `${colors.moss}20`, color: colors.moss }}
+                          className="px-2 py-1 rounded-lg text-xs font-medium flex items-center space-x-1"
+                        >
+                          <TrendingUp className="h-3 w-3" />
+                          <span>Trending</span>
+                        </span>
+                      )}
+                    </div>
+                    {pyq.year && (
+                      <span 
+                        style={{ backgroundColor: `${colors.orangeWheel}20`, color: colors.orangeWheel }}
+                        className="px-2 py-1 rounded-lg text-xs font-bold"
+                      >
+                        {pyq.year}
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 
+                    style={{ color: colors.pureWhite }}
+                    className="font-bold text-lg mb-1 line-clamp-2"
+                  >
+                    {pyq.title}
+                  </h3>
+                  <p style={{ color: colors.moss }} className="text-sm line-clamp-1">
+                    {pyq.subject} {pyq.shift ? `• ${pyq.shift}` : ''}
+                  </p>
+                </div>
+
+                {/* Stats */}
+                <div className="p-5">
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    <div className="text-center">
+                      <p style={{ color: colors.pureWhite }} className="font-bold">
+                        {pyq.pages || pyq.totalQuestions || '—'}
+                      </p>
+                      <p style={{ color: colors.moss }} className="text-xs">
+                        {pyq.pages ? 'Pages' : 'Questions'}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p style={{ color: colors.pureWhite }} className="font-bold">
+                        {formatNumber(pyq.stats?.downloads || 0)}
+                      </p>
+                      <p style={{ color: colors.moss }} className="text-xs">Downloads</p>
+                    </div>
+                    <div className="text-center">
+                      <p style={{ color: colors.pureWhite }} className="font-bold flex items-center justify-center space-x-1">
+                        <Star style={{ color: colors.orangeWheel }} className="h-3 w-3 fill-current" />
+                        <span>{pyq.rating?.average?.toFixed(1) || '4.5'}</span>
+                      </p>
+                      <p style={{ color: colors.moss }} className="text-xs">Rating</p>
+                    </div>
+                  </div>
+
+                  {/* Tags */}
+                  {pyq.tags && pyq.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {pyq.tags.slice(0, 3).map((tag, index) => (
+                        <span
+                          key={index}
+                          style={{ backgroundColor: `${colors.moss}20`, color: colors.moss }}
+                          className="px-2 py-1 rounded-lg text-xs"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex items-center space-x-2">
+                    {pyq.fileUrl && (
+                      <a
+                        href={pyq.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ background: `linear-gradient(to right, ${colors.hotOrange}, ${colors.orangeWheel})` }}
+                        className="flex-1 py-3 rounded-xl text-white font-semibold flex items-center justify-center space-x-2"
+                      >
+                        <Eye className="h-4 w-4" />
+                        <span>View PDF</span>
+                      </a>
+                    )}
+                    <a
+                      href={pyq.fileUrl}
+                      download
+                      style={{ backgroundColor: `${colors.moss}20`, borderColor: `${colors.moss}30` }}
+                      className="p-3 rounded-xl border-2"
+                    >
+                      <Download style={{ color: colors.moss }} className="h-5 w-5" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

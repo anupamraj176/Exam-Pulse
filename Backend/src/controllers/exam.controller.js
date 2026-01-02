@@ -356,18 +356,84 @@ export const getExamCategories = async (req, res, next) => {
     ]);
 
     const categoryInfo = {
-      ssc: { name: 'SSC', fullName: 'Staff Selection Commission', icon: '📋', color: '#3B82F6' },
-      banking: { name: 'Banking', fullName: 'Bank & Insurance Exams', icon: '🏦', color: '#22C55E' },
-      railways: { name: 'Railways', fullName: 'Railway Recruitment Board', icon: '🚂', color: '#EF4444' },
-      upsc: { name: 'UPSC', fullName: 'Union Public Service Commission', icon: '🎯', color: '#8B5CF6' },
-      'state-psc': { name: 'State PSC', fullName: 'State Public Service Commission', icon: '🏛️', color: '#F97316' },
-      defence: { name: 'Defence', fullName: 'Defence & Paramilitary', icon: '⚔️', color: '#6366F1' },
-      teaching: { name: 'Teaching', fullName: 'Teaching Exams', icon: '📚', color: '#EC4899' },
-      other: { name: 'Other', fullName: 'Other Exams', icon: '📄', color: '#6B7280' },
+      ssc: { 
+        name: 'SSC', 
+        fullName: 'Staff Selection Commission', 
+        description: 'Central government job exams for various posts',
+        icon: '📋', 
+        color: '#3B82F6',
+        isTrending: true,
+        stats: { students: 2341, materials: 1250, pyq: 450 }
+      },
+      banking: { 
+        name: 'Banking', 
+        fullName: 'Bank & Insurance Exams', 
+        description: 'Public & private sector banking jobs',
+        icon: '🏦', 
+        color: '#22C55E',
+        isTrending: true,
+        stats: { students: 1876, materials: 980, pyq: 380 }
+      },
+      railways: { 
+        name: 'Railways', 
+        fullName: 'Railway Recruitment Board', 
+        description: 'Indian Railways job opportunities',
+        icon: '🚂', 
+        color: '#EF4444',
+        isTrending: false,
+        stats: { students: 1654, materials: 850, pyq: 320 }
+      },
+      upsc: { 
+        name: 'UPSC', 
+        fullName: 'Union Public Service Commission', 
+        description: 'Civil services & central government posts',
+        icon: '🎯', 
+        color: '#8B5CF6',
+        isTrending: true,
+        stats: { students: 3421, materials: 2100, pyq: 680 }
+      },
+      'state-psc': { 
+        name: 'State PSC', 
+        fullName: 'State Public Service Commission', 
+        description: 'State government job examinations',
+        icon: '🏛️', 
+        color: '#F97316',
+        isTrending: false,
+        stats: { students: 1234, materials: 920, pyq: 290 }
+      },
+      defence: { 
+        name: 'Defence', 
+        fullName: 'Defence & Paramilitary Forces', 
+        description: 'Armed forces & paramilitary recruitment',
+        icon: '⚔️', 
+        color: '#6366F1',
+        isTrending: false,
+        stats: { students: 987, materials: 670, pyq: 210 }
+      },
+      teaching: { 
+        name: 'Teaching', 
+        fullName: 'Teaching Exams', 
+        description: 'Teaching and education sector jobs',
+        icon: '📚', 
+        color: '#EC4899',
+        isTrending: false,
+        stats: { students: 756, materials: 450, pyq: 180 }
+      },
+      other: { 
+        name: 'Other', 
+        fullName: 'Other Exams', 
+        description: 'Miscellaneous competitive exams',
+        icon: '📄', 
+        color: '#6B7280',
+        isTrending: false,
+        stats: { students: 432, materials: 280, pyq: 90 }
+      },
     };
 
     const formattedCategories = categories.map((cat) => ({
+      _id: cat._id,
       id: cat._id,
+      slug: cat._id,
       ...categoryInfo[cat._id],
       count: cat.count,
       exams: cat.exams.slice(0, 7),

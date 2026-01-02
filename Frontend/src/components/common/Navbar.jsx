@@ -362,7 +362,7 @@ const Navbar = () => {
                     >
                       <div className="p-2">
                         <Link
-                          to="/dashboard"
+                          to="/profile"
                           style={{ color: colors.pureWhite }}
                           className="flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200"
                           onMouseEnter={(e) => {
@@ -375,6 +375,22 @@ const Navbar = () => {
                           }}
                         >
                           <User className="h-4 w-4" />
+                          <span className="text-sm font-medium">My Profile</span>
+                        </Link>
+                        <Link
+                          to="/dashboard"
+                          style={{ color: colors.pureWhite }}
+                          className="flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200"
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = colors.smokyBlack;
+                            e.currentTarget.style.color = colors.hotOrange;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = colors.pureWhite;
+                          }}
+                        >
+                          <Calendar className="h-4 w-4" />
                           <span className="text-sm font-medium">Dashboard</span>
                         </Link>
                         <Link
@@ -409,6 +425,25 @@ const Navbar = () => {
                           <Settings className="h-4 w-4" />
                           <span className="text-sm font-medium">Settings</span>
                         </Link>
+                        {user?.role === 'admin' && (
+                          <>
+                            <div style={{ borderColor: `rgba(153, 165, 125, 0.2)` }} className="border-t my-2"></div>
+                            <Link
+                              to="/admin"
+                              style={{ color: colors.hotOrange }}
+                              className="flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200"
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = colors.smokyBlack;
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                              }}
+                            >
+                              <Settings className="h-4 w-4" />
+                              <span className="text-sm font-medium">Admin Panel</span>
+                            </Link>
+                          </>
+                        )}
                         <div style={{ borderColor: `rgba(153, 165, 125, 0.2)` }} className="border-t my-2"></div>
                         <button 
                           style={{ color: colors.pureWhite }}

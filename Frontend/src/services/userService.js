@@ -60,6 +60,21 @@ export const setTargetExams = async (examIds) => {
   return response.data;
 };
 
+// Change password
+export const changePassword = async (currentPassword, newPassword) => {
+  const response = await api.put('/users/change-password', { 
+    currentPassword, 
+    newPassword 
+  });
+  return response.data;
+};
+
+// Delete account
+export const deleteAccount = async () => {
+  const response = await api.delete('/users/account');
+  return response.data;
+};
+
 export default {
   getProfile,
   updateProfile,
@@ -71,4 +86,6 @@ export default {
   getRecentActivity,
   updateStudyStats,
   setTargetExams,
+  changePassword,
+  deleteAccount,
 };

@@ -10,6 +10,8 @@ import {
   setTargetExams,
   getRecentActivity,
   getAllUsers,
+  changePassword,
+  deleteAccount,
 } from '../controllers/user.controller.js';
 import { protect, authorize } from '../middleware/auth.middleware.js';
 
@@ -21,6 +23,10 @@ router.use(protect);
 // User profile routes
 router.get('/profile', getProfile);
 router.put('/profile', updateProfile);
+
+// Password & Account management
+router.put('/change-password', changePassword);
+router.delete('/account', deleteAccount);
 
 // Bookmark routes
 router.get('/bookmarks', getBookmarks);

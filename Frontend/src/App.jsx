@@ -11,6 +11,10 @@ import ExamDetail from './pages/ExamDetails';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Notifications from './pages/Notifications';
+import Admin from './pages/Admin';
+import Profile from './pages/Profile';
+import Settings from './pages/Settings';
+import Bookmarks from './pages/Bookmarks';
 
 function App() {
   return (
@@ -27,6 +31,10 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/bookmarks" element={<Bookmarks />} />
         </Routes>
         <Footer />
       </div>

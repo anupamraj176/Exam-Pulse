@@ -82,10 +82,8 @@ const Register = () => {
       newErrors.email = 'Please enter a valid email';
     }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
-    } else if (formData.phone.length < 10) {
-      newErrors.phone = 'Please enter a valid phone number';
+    if (formData.phone.trim() && (formData.phone.length < 10 || formData.phone.length > 15)) {
+      newErrors.phone = 'Please enter a valid phone number (10-15 digits)';
     }
 
     if (!formData.password) {
