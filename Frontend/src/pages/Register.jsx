@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Mail, 
@@ -12,6 +12,7 @@ import {
   Loader,
   Phone
 } from 'lucide-react';
+import useAuthStore from '../store/authStore';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -24,9 +25,22 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+
+  const { register, isLoading, error, isAuthenticated, clearError } = useAuthStore();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Clear error on unmount
+  useEffect(() => {
+    return () => clearError();
+  }, [clearError]);
 
   // Color palette
   const colors = {
@@ -68,10 +82,8 @@ const Register = () => {
       newErrors.email = 'Please enter a valid email';
     }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
-    } else if (formData.phone.length < 10) {
-      newErrors.phone = 'Please enter a valid phone number';
+    if (formData.phone.trim() && (formData.phone.length < 10 || formData.phone.length > 15)) {
+      newErrors.phone = 'Please enter a valid phone number (10-15 digits)';
     }
 
     if (!formData.password) {
@@ -103,14 +115,16 @@ const Register = () => {
       return;
     }
 
-    setIsLoading(true);
+    const result = await register({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      password: formData.password,
+    });
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      // In real app, handle actual registration logic here
+    if (result.success) {
       navigate('/dashboard');
-    }, 2000);
+    }
   };
 
   const passwordStrength = () => {
@@ -138,7 +152,7 @@ const Register = () => {
   return (
     <div 
       style={{ backgroundColor: colors.smokyBlack }}
-      className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+      className="min-h-screen flex items-center justify-center pt-24 pb-12 px-4 sm:px-6 lg:px-8"
     >
       {/* Background Decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

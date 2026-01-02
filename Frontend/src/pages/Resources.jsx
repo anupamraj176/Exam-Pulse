@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Search, 
   Filter, 
@@ -14,8 +14,10 @@ import {
   X,
   ChevronDown,
   TrendingUp,
-  Calendar
+  Calendar,
+  Loader
 } from 'lucide-react';
+import useResourceStore from '../store/resourceStore';
 
 const Resources = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,6 +26,33 @@ const Resources = () => {
   const [selectedType, setSelectedType] = useState('all');
   const [sortBy, setSortBy] = useState('popular');
   const [showFilters, setShowFilters] = useState(false);
+
+  const { 
+    resources, 
+    fetchResources, 
+    searchResources,
+    isLoading, 
+    pagination 
+  } = useResourceStore();
+
+  // Fetch resources on mount and when filters change
+  useEffect(() => {
+    const params = {
+      page: 1,
+      limit: 20,
+      ...(selectedExam !== 'all' && { category: selectedExam }),
+      ...(selectedSubject !== 'all' && { subject: selectedSubject }),
+      ...(selectedType !== 'all' && { type: selectedType }),
+      sortBy: sortBy === 'popular' ? 'views' : sortBy === 'recent' ? 'createdAt' : sortBy,
+    };
+    
+    if (searchQuery) {
+      searchResources(searchQuery, params);
+    } else {
+      fetchResources(params);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedExam, selectedSubject, selectedType, sortBy, searchQuery]);
 
   // Color palette
   const colors = {
@@ -74,179 +103,27 @@ const Resources = () => {
     { id: 'downloads', name: 'Most Downloaded' },
   ];
 
-  const allResources = [
-    {
-      id: 1,
-      title: 'Complete Indian Polity Notes',
-      category: 'UPSC',
-      subject: 'polity',
-      type: 'notes',
-      description: 'Comprehensive notes covering Constitution, Parliament, Judiciary.',
-      thumbnail: '📚',
-      rating: 4.8,
-      downloads: 12400,
-      views: 25600,
-      pages: 120,
-      uploadedBy: 'Rajesh Kumar',
-      uploadedDate: '2024-12-20',
-      tags: ['Constitution', 'Parliament', 'Judiciary'],
-      color: colors.hotOrange,
-      trending: true,
-    },
-    {
-      id: 2,
-      title: 'SSC CGL Mathematics PYQ (2015-2024)',
-      category: 'SSC',
-      subject: 'math',
-      type: 'pyq',
-      description: 'Last 10 years solved PYQ with detailed explanations.',
-      thumbnail: '🔢',
-      rating: 4.9,
-      downloads: 18900,
-      views: 34200,
-      pages: 200,
-      uploadedBy: 'Priya Sharma',
-      uploadedDate: '2024-12-18',
-      tags: ['Quantitative', 'Algebra', 'Geometry'],
-      color: colors.orangeWheel,
-      trending: true,
-    },
-    {
-      id: 3,
-      title: 'Banking Awareness Complete Package',
-      category: 'Banking',
-      subject: 'gk',
-      type: 'notes',
-      description: 'Current affairs, banking terms, RBI policies.',
-      thumbnail: '🏦',
-      rating: 4.7,
-      downloads: 9800,
-      views: 18500,
-      pages: 85,
-      uploadedBy: 'Amit Verma',
-      uploadedDate: '2024-12-22',
-      tags: ['RBI', 'Banking Terms', 'Current Affairs'],
-      color: colors.moss,
-      trending: false,
-    },
-    {
-      id: 4,
-      title: 'English Grammar Masterclass',
-      category: 'All Exams',
-      subject: 'english',
-      type: 'video',
-      description: 'Complete video series on grammar, vocabulary.',
-      thumbnail: '🎥',
-      rating: 4.9,
-      downloads: 15600,
-      views: 42000,
-      duration: '12 hours',
-      uploadedBy: 'Sneha Gupta',
-      uploadedDate: '2024-12-15',
-      tags: ['Grammar', 'Vocabulary', 'Comprehension'],
-      color: colors.hotOrange,
-      trending: true,
-    },
-    {
-      id: 5,
-      title: 'Indian Geography Complete Notes',
-      category: 'UPSC',
-      subject: 'geography',
-      type: 'notes',
-      description: 'Physical, economic, social geography with maps.',
-      thumbnail: '🗺️',
-      rating: 4.6,
-      downloads: 8700,
-      views: 16200,
-      pages: 95,
-      uploadedBy: 'Vikram Singh',
-      uploadedDate: '2024-12-19',
-      tags: ['Physical', 'Economic', 'Maps'],
-      color: colors.moss,
-      trending: false,
-    },
-    {
-      id: 6,
-      title: 'Reasoning Shortcuts & Tricks',
-      category: 'SSC',
-      subject: 'reasoning',
-      type: 'notes',
-      description: 'Smart shortcuts for solving reasoning quickly.',
-      thumbnail: '🧠',
-      rating: 4.8,
-      downloads: 21000,
-      views: 38900,
-      pages: 65,
-      uploadedBy: 'Rahul Joshi',
-      uploadedDate: '2024-12-21',
-      tags: ['Shortcuts', 'Puzzles', 'Seating'],
-      color: colors.orangeWheel,
-      trending: true,
-    },
-    {
-      id: 7,
-      title: 'Railway GK & Current Affairs 2024',
-      category: 'Railways',
-      subject: 'gk',
-      type: 'notes',
-      description: 'Complete GK and current affairs for railway exams.',
-      thumbnail: '🚂',
-      rating: 4.7,
-      downloads: 11200,
-      views: 21800,
-      pages: 110,
-      uploadedBy: 'Ankit Sharma',
-      uploadedDate: '2024-12-23',
-      tags: ['Current Affairs', 'Railway GK', 'Static GK'],
-      color: colors.hotOrange,
-      trending: false,
-    },
-    {
-      id: 8,
-      title: 'History of Modern India',
-      category: 'UPSC',
-      subject: 'history',
-      type: 'notes',
-      description: 'Complete modern India history from 1857 to independence.',
-      thumbnail: '📜',
-      rating: 4.8,
-      downloads: 13400,
-      views: 27300,
-      pages: 145,
-      uploadedBy: 'Meera Reddy',
-      uploadedDate: '2024-12-17',
-      tags: ['Modern History', 'Freedom Struggle', '1857'],
-      color: colors.moss,
-      trending: false,
-    },
-  ];
+  // Type icons mapping
+  const typeIcons = {
+    notes: '📚',
+    pdf: '📄',
+    pyq: '🔢',
+    video: '🎥',
+    ebook: '📖',
+  };
 
-  // Filter resources
-  const filteredResources = allResources.filter(resource => {
-    const matchesSearch = resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         resource.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesExam = selectedExam === 'all' || resource.category.toLowerCase().includes(selectedExam);
-    const matchesSubject = selectedSubject === 'all' || resource.subject === selectedSubject;
-    const matchesType = selectedType === 'all' || resource.type === selectedType;
-    
-    return matchesSearch && matchesExam && matchesSubject && matchesType;
-  });
-
-  // Sort resources
-  const sortedResources = [...filteredResources].sort((a, b) => {
-    switch (sortBy) {
-      case 'popular':
-        return b.views - a.views;
-      case 'recent':
-        return new Date(b.uploadedDate) - new Date(a.uploadedDate);
-      case 'rating':
-        return b.rating - a.rating;
-      case 'downloads':
-        return b.downloads - a.downloads;
-      default:
-        return 0;
+  // Get color based on type
+  const getResourceColor = (type) => {
+    switch(type) {
+      case 'notes': return colors.hotOrange;
+      case 'pyq': return colors.orangeWheel;
+      case 'video': return colors.hotOrange;
+      default: return colors.moss;
     }
-  });
+  };
+
+  // Use API resources or fallback empty array
+  const displayResources = resources || [];
 
   const clearFilters = () => {
     setSearchQuery('');
@@ -298,7 +175,7 @@ const Resources = () => {
             style={{ color: colors.moss }}
             className="text-lg max-w-2xl"
           >
-            Access {allResources.length}+ high-quality study materials, notes, and previous year questions
+            Access {pagination?.total || displayResources.length || 100}+ high-quality study materials, notes, and previous year questions
           </p>
         </div>
       </div>
@@ -460,16 +337,21 @@ const Resources = () => {
         {/* Results Count */}
         <div className="mb-6">
           <p style={{ color: colors.moss }} className="text-sm">
-            Showing <span style={{ color: colors.pureWhite }} className="font-bold">{sortedResources.length}</span> results
+            Showing <span style={{ color: colors.pureWhite }} className="font-bold">{displayResources.length}</span> results
+            {pagination?.total > 0 && ` of ${pagination.total}`}
           </p>
         </div>
 
-        {/* Resources Grid */}
-        {sortedResources.length > 0 ? (
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="flex justify-center items-center py-16">
+            <Loader style={{ color: colors.hotOrange }} className="h-8 w-8 animate-spin" />
+          </div>
+        ) : displayResources.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedResources.map((resource) => (
+            {displayResources.map((resource) => (
               <div
-                key={resource.id}
+                key={resource._id || resource.id}
                 style={{
                   backgroundColor: colors.eerieBlack,
                   borderColor: `${colors.moss}20`,
@@ -488,14 +370,14 @@ const Resources = () => {
                   <div className="flex items-start justify-between mb-4">
                     <div 
                       style={{
-                        background: `linear-gradient(135deg, ${resource.color}20, ${resource.color}10)`,
+                        background: `linear-gradient(135deg, ${getResourceColor(resource.type)}20, ${getResourceColor(resource.type)}10)`,
                       }}
                       className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl"
                     >
-                      {resource.thumbnail}
+                      {typeIcons[resource.type] || '📄'}
                     </div>
                     
-                    {resource.trending && (
+                    {resource.isTrending && (
                       <div 
                         style={{
                           backgroundColor: `${colors.hotOrange}20`,
@@ -534,7 +416,7 @@ const Resources = () => {
                   </p>
 
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {resource.tags.map((tag, idx) => (
+                    {(resource.tags || []).map((tag, idx) => (
                       <span
                         key={idx}
                         style={{
@@ -559,7 +441,7 @@ const Resources = () => {
                           style={{ color: colors.pureWhite }}
                           className="text-sm font-semibold"
                         >
-                          {resource.rating}
+                          {resource.stats?.rating || 0}
                         </span>
                       </div>
 
@@ -572,7 +454,7 @@ const Resources = () => {
                           style={{ color: colors.moss }}
                           className="text-xs"
                         >
-                          {(resource.downloads / 1000).toFixed(1)}k
+                          {((resource.stats?.downloads || 0) / 1000).toFixed(1)}k
                         </span>
                       </div>
 
@@ -585,25 +467,25 @@ const Resources = () => {
                           style={{ color: colors.moss }}
                           className="text-xs"
                         >
-                          {(resource.views / 1000).toFixed(1)}k
+                          {((resource.stats?.views || 0) / 1000).toFixed(1)}k
                         </span>
                       </div>
                     </div>
 
-                    {resource.pages && (
+                    {resource.metadata?.pages && (
                       <span 
                         style={{ color: colors.moss }}
                         className="text-xs font-medium"
                       >
-                        {resource.pages} pages
+                        {resource.metadata.pages} pages
                       </span>
                     )}
-                    {resource.duration && (
+                    {resource.metadata?.duration && (
                       <span 
                         style={{ color: colors.moss }}
                         className="text-xs font-medium"
                       >
-                        {resource.duration}
+                        {resource.metadata.duration}
                       </span>
                     )}
                   </div>
@@ -619,14 +501,14 @@ const Resources = () => {
                         }}
                         className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
                       >
-                        {resource.uploadedBy.charAt(0)}
+                        {resource.uploadedBy?.name?.charAt(0) || 'U'}
                       </div>
                       <div>
                         <p 
                           style={{ color: colors.pureWhite }}
                           className="text-xs font-medium"
                         >
-                          {resource.uploadedBy}
+                          {resource.uploadedBy?.name || 'Unknown'}
                         </p>
                         <div className="flex items-center space-x-1">
                           <Calendar 
@@ -637,7 +519,7 @@ const Resources = () => {
                             style={{ color: colors.moss }}
                             className="text-xs"
                           >
-                            {new Date(resource.uploadedDate).toLocaleDateString()}
+                            {resource.createdAt ? new Date(resource.createdAt).toLocaleDateString() : 'Recently'}
                           </span>
                         </div>
                       </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Users, 
@@ -7,11 +7,18 @@ import {
   TrendingUp,
   ChevronRight,
   Zap,
-  Clock
+  Clock,
+  Loader
 } from 'lucide-react';
+import useExamStore from '../../store/examStore';
 
 const ExamCategories = () => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
+  const { categories, fetchCategories, isLoading } = useExamStore();
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   // Color palette
   const colors = {
@@ -25,110 +32,95 @@ const ExamCategories = () => {
     pureWhite: '#FFFFFF',
   };
 
-  const examCategories = [
+  // Get gradient based on index
+  const getGradient = (index) => {
+    const gradients = [
+      `linear-gradient(135deg, ${colors.hotOrange}, ${colors.orangeWheel})`,
+      `linear-gradient(135deg, ${colors.moss}, #7A8F5E)`,
+      `linear-gradient(135deg, ${colors.orangeWheel}, #D96A08)`,
+      `linear-gradient(135deg, ${colors.hotOrange}, ${colors.moss})`,
+      `linear-gradient(135deg, #8A9B6D, ${colors.moss})`,
+      `linear-gradient(135deg, ${colors.orangeWheel}, ${colors.hotOrange})`,
+    ];
+    return gradients[index % gradients.length];
+  };
+
+  // Get icon based on category name
+  const getCategoryIcon = (name) => {
+    const icons = {
+      'SSC': '📋',
+      'Banking': '🏦',
+      'Railways': '🚂',
+      'UPSC': '🎯',
+      'State PSC': '🏛️',
+      'Defence': '⚔️',
+      'Teaching': '📚',
+      'Engineering': '⚙️',
+      'Medical': '🏥',
+    };
+    return icons[name] || '📝';
+  };
+
+  // Fallback categories if API returns empty
+  const fallbackCategories = [
     {
-      id: 'ssc',
+      _id: 'ssc',
       name: 'SSC',
       fullName: 'Staff Selection Commission',
-      icon: '📋',
-      gradient: `linear-gradient(135deg, ${colors.hotOrange}, ${colors.orangeWheel})`,
-      bgColor: colors.eerieBlack,
       description: 'Central government job exams for various posts',
       exams: ['CGL', 'CHSL', 'MTS', 'CPO', 'GD', 'JE', 'Steno'],
-      stats: {
-        students: 2341,
-        materials: 1250,
-        pyq: 450,
-      },
-      trending: true,
-      path: '/exams/ssc',
+      stats: { students: 2341, materials: 1250, pyq: 450 },
+      isTrending: true,
     },
     {
-      id: 'banking',
+      _id: 'banking',
       name: 'Banking',
       fullName: 'Bank & Insurance Exams',
-      icon: '🏦',
-      gradient: `linear-gradient(135deg, ${colors.moss}, #7A8F5E)`,
-      bgColor: colors.eerieBlack,
       description: 'Public & private sector banking jobs',
       exams: ['SBI PO', 'SBI Clerk', 'IBPS PO', 'IBPS Clerk', 'RBI', 'NABARD'],
-      stats: {
-        students: 1876,
-        materials: 980,
-        pyq: 380,
-      },
-      trending: true,
-      path: '/exams/banking',
+      stats: { students: 1876, materials: 980, pyq: 380 },
+      isTrending: true,
     },
     {
-      id: 'railways',
+      _id: 'railways',
       name: 'Railways',
       fullName: 'Railway Recruitment Board',
-      icon: '🚂',
-      gradient: `linear-gradient(135deg, ${colors.orangeWheel}, #D96A08)`,
-      bgColor: colors.eerieBlack,
       description: 'Indian Railways job opportunities',
       exams: ['RRB NTPC', 'RRB Group D', 'RRB JE', 'RRB ALP', 'RPF'],
-      stats: {
-        students: 1654,
-        materials: 850,
-        pyq: 320,
-      },
-      trending: false,
-      path: '/exams/railways',
+      stats: { students: 1654, materials: 850, pyq: 320 },
+      isTrending: false,
     },
     {
-      id: 'upsc',
+      _id: 'upsc',
       name: 'UPSC',
       fullName: 'Union Public Service Commission',
-      icon: '🎯',
-      gradient: `linear-gradient(135deg, ${colors.hotOrange}, ${colors.moss})`,
-      bgColor: colors.eerieBlack,
       description: 'Civil services & central government posts',
       exams: ['IAS', 'IPS', 'IFS', 'CDS', 'CAPF', 'NDA', 'ESE'],
-      stats: {
-        students: 3421,
-        materials: 2100,
-        pyq: 680,
-      },
-      trending: true,
-      path: '/exams/upsc',
+      stats: { students: 3421, materials: 2100, pyq: 680 },
+      isTrending: true,
     },
     {
-      id: 'state-psc',
+      _id: 'state-psc',
       name: 'State PSC',
       fullName: 'State Public Service Commission',
-      icon: '🏛️',
-      gradient: `linear-gradient(135deg, #8A9B6D, ${colors.moss})`,
-      bgColor: colors.eerieBlack,
       description: 'State government job examinations',
       exams: ['BPSC', 'UPPSC', 'MPPSC', 'RPSC', 'WBPSC', 'TNPSC'],
-      stats: {
-        students: 1234,
-        materials: 920,
-        pyq: 290,
-      },
-      trending: false,
-      path: '/exams/state-psc',
+      stats: { students: 1234, materials: 920, pyq: 290 },
+      isTrending: false,
     },
     {
-      id: 'defence',
+      _id: 'defence',
       name: 'Defence',
       fullName: 'Defence & Paramilitary Forces',
-      icon: '⚔️',
-      gradient: `linear-gradient(135deg, ${colors.orangeWheel}, ${colors.hotOrange})`,
-      bgColor: colors.eerieBlack,
       description: 'Armed forces & paramilitary recruitment',
       exams: ['CDS', 'NDA', 'AFCAT', 'Indian Navy', 'Indian Army', 'IAF'],
-      stats: {
-        students: 987,
-        materials: 670,
-        pyq: 210,
-      },
-      trending: false,
-      path: '/exams/defence',
+      stats: { students: 987, materials: 670, pyq: 210 },
+      isTrending: false,
     },
   ];
+
+  // Use API data or fallback - with safety check
+  const examCategories = (categories && categories.length > 0) ? categories : fallbackCategories;
 
   return (
     <div 
@@ -179,13 +171,18 @@ const ExamCategories = () => {
         </div>
 
         {/* Categories Grid */}
+        {isLoading ? (
+          <div className="flex justify-center items-center py-16">
+            <Loader style={{ color: colors.hotOrange }} className="h-8 w-8 animate-spin" />
+          </div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {examCategories.map((category, index) => (
             <Link
-              key={category.id}
-              to={category.path}
+              key={category._id || category.id}
+              to={`/exams/${category.slug || category._id || category.name.toLowerCase().replace(/\s+/g, '-')}`}
               style={{
-                backgroundColor: category.bgColor,
+                backgroundColor: colors.eerieBlack,
                 borderColor: hoveredIndex === index ? colors.hotOrange : `${colors.moss}30`,
               }}
               className="rounded-2xl border-2 overflow-hidden transition-all duration-300 group"
@@ -204,11 +201,11 @@ const ExamCategories = () => {
             >
               {/* Card Header with Gradient */}
               <div 
-                style={{ background: category.gradient }}
+                style={{ background: getGradient(index) }}
                 className="p-6 relative overflow-hidden"
               >
                 {/* Trending Badge */}
-                {category.trending && (
+                {category.isTrending && (
                   <div 
                     style={{
                       backgroundColor: colors.pureWhite,
@@ -222,7 +219,7 @@ const ExamCategories = () => {
                 )}
 
                 <div className="flex items-start justify-between mb-4">
-                  <div className="text-6xl">{category.icon}</div>
+                  <div className="text-6xl">{getCategoryIcon(category.name)}</div>
                   <ChevronRight 
                     style={{ color: colors.pureWhite }}
                     className="h-6 w-6 transform group-hover:translate-x-1 transition-transform duration-300"
@@ -254,7 +251,7 @@ const ExamCategories = () => {
 
                 {/* Exam List */}
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {category.exams.slice(0, 4).map((exam, idx) => (
+                  {(category.exams || []).slice(0, 4).map((exam, idx) => (
                     <span
                       key={idx}
                       style={{
@@ -263,10 +260,10 @@ const ExamCategories = () => {
                       }}
                       className="px-3 py-1 rounded-full text-xs font-medium"
                     >
-                      {exam}
+                      {typeof exam === 'object' ? exam.name : exam}
                     </span>
                   ))}
-                  {category.exams.length > 4 && (
+                  {(category.exams || []).length > 4 && (
                     <span
                       style={{
                         backgroundColor: `${colors.hotOrange}20`,
@@ -297,7 +294,7 @@ const ExamCategories = () => {
                       style={{ color: colors.pureWhite }}
                       className="text-lg font-bold"
                     >
-                      {category.stats.students.toLocaleString()}
+                      {(category.stats?.students || 0).toLocaleString()}
                     </p>
                     <p 
                       style={{ color: colors.moss }}
@@ -318,7 +315,7 @@ const ExamCategories = () => {
                       style={{ color: colors.pureWhite }}
                       className="text-lg font-bold"
                     >
-                      {category.stats.materials}
+                      {category.stats?.materials || 0}
                     </p>
                     <p 
                       style={{ color: colors.moss }}
@@ -339,7 +336,7 @@ const ExamCategories = () => {
                       style={{ color: colors.pureWhite }}
                       className="text-lg font-bold"
                     >
-                      {category.stats.pyq}
+                      {category.stats?.pyq || 0}
                     </p>
                     <p 
                       style={{ color: colors.moss }}
@@ -353,6 +350,7 @@ const ExamCategories = () => {
             </Link>
           ))}
         </div>
+        )}
 
         {/* Bottom CTA */}
         <div 

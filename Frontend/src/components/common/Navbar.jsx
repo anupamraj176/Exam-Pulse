@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Menu, 
   X, 
@@ -14,14 +14,22 @@ import {
   Settings,
   Bookmark
 } from 'lucide-react';
+import useAuthStore from '../../store/authStore';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isExamDropdownOpen, setIsExamDropdownOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false); 
+  const { isAuthenticated, user, logout } = useAuthStore();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    setIsProfileDropdownOpen(false);
+    navigate('/');
+  };
 
   // Color palette
   const colors = {
@@ -281,7 +289,8 @@ const Navbar = () => {
             </button>
 
             {/* Notifications */}
-            <button 
+            <Link 
+              to="/notifications"
               style={{ color: colors.pureWhite }}
               className="p-2 rounded-lg transition-all duration-200 relative"
               onMouseEnter={(e) => {
@@ -298,13 +307,13 @@ const Navbar = () => {
                 style={{ backgroundColor: colors.hotOrange }}
                 className="absolute top-1 right-1 h-2 w-2 rounded-full animate-pulse"
               ></span>
-            </button>
+            </Link>
 
             {isAuthenticated ? (
               <>
                 {/* Calendar */}
                 <Link
-                  to="/calendar"
+                  to="/exam-calendar"
                   style={{ color: colors.pureWhite }}
                   className="p-2 rounded-lg transition-all duration-200"
                   onMouseEnter={(e) => {
@@ -339,7 +348,7 @@ const Navbar = () => {
                       }}
                       className="h-8 w-8 rounded-full flex items-center justify-center font-bold text-sm"
                     >
-                      A
+                      {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
                   </button>
 
@@ -354,7 +363,7 @@ const Navbar = () => {
                     >
                       <div className="p-2">
                         <Link
-                          to="/dashboard"
+                          to="/profile"
                           style={{ color: colors.pureWhite }}
                           className="flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200"
                           onMouseEnter={(e) => {
@@ -367,6 +376,22 @@ const Navbar = () => {
                           }}
                         >
                           <User className="h-4 w-4" />
+                          <span className="text-sm font-medium">My Profile</span>
+                        </Link>
+                        <Link
+                          to="/dashboard"
+                          style={{ color: colors.pureWhite }}
+                          className="flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200"
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = colors.smokyBlack;
+                            e.currentTarget.style.color = colors.hotOrange;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = colors.pureWhite;
+                          }}
+                        >
+                          <Calendar className="h-4 w-4" />
                           <span className="text-sm font-medium">Dashboard</span>
                         </Link>
                         <Link
@@ -401,6 +426,25 @@ const Navbar = () => {
                           <Settings className="h-4 w-4" />
                           <span className="text-sm font-medium">Settings</span>
                         </Link>
+                        {user?.role === 'admin' && (
+                          <>
+                            <div style={{ borderColor: `rgba(153, 165, 125, 0.2)` }} className="border-t my-2"></div>
+                            <Link
+                              to="/admin"
+                              style={{ color: colors.hotOrange }}
+                              className="flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200"
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = colors.smokyBlack;
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                              }}
+                            >
+                              <Settings className="h-4 w-4" />
+                              <span className="text-sm font-medium">Admin Panel</span>
+                            </Link>
+                          </>
+                        )}
                         <div style={{ borderColor: `rgba(153, 165, 125, 0.2)` }} className="border-t my-2"></div>
                         <button 
                           style={{ color: colors.pureWhite }}
@@ -413,6 +457,7 @@ const Navbar = () => {
                             e.currentTarget.style.backgroundColor = 'transparent';
                             e.currentTarget.style.color = colors.pureWhite;
                           }}
+                          onClick={handleLogout}
                         >
                           <LogOut className="h-4 w-4" />
                           <span className="text-sm font-medium">Logout</span>
